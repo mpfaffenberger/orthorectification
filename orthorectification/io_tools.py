@@ -13,6 +13,6 @@ def save_raster_as_geotiff(ortho: np.ndarray, ul_lon: float, ul_lat: float, gsd:
     coordinate_system.ImportFromEPSG(4326)
     ortho_ds.SetProjection(coordinate_system.ExportToWkt())
     ortho_band.FlushCache()
-    # makes sure resources are release...
+    # makes sure resources are released...
     ortho_band = None
     ortho_ds = None

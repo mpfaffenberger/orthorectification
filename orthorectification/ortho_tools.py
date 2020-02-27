@@ -132,7 +132,7 @@ def make_ortho(
             dem_x = int((lon - dem_geot[0]) / dem_geot[1])
             dem_y = int((lat - dem_geot[3]) / dem_geot[5])
             if dem_x < 0 or dem_x > dem.shape[1] - 1 or dem_y < 0 or dem_y > dem.shape[0] - 1:
-                # Numba will segfault if I don't catch this error... AND it will fail to compile
+                # Numba will segfault if I don't catch this... AND it will fail to compile
                 # if I try to include a useful message with "dem_x" and "dem_y" :( :( :(
                 raise IndexError("DEM indices out of bounds")
             altitude = linear_interp(dem_x, dem_y, dem.reshape(-1), dem.shape[1])
@@ -147,7 +147,7 @@ def make_ortho(
 
 
 @jit(nopython=True)
-def linear_interp(x: float, y: float, source: np.ndarray, source_height) -> int:
+def linear_interp(x: float, y: float, source: np.ndarray, source_height: int) -> int:
     x_floor = math.floor(x)
     x_ceil = math.ceil(x)
     y_floor = math.floor(y)

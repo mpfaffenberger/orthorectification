@@ -18,7 +18,8 @@ def convert_to_8bit(img: np.array) -> np.array:
 
 @jit(nopython=True, parallel=True)
 def gaussian_rescale(img: np.array, bitness=11, stdev_bound=2) -> np.array:
-    img_0_1 = img / ((2 ** bitness) - 1)
+    img_float = img.astype(np.float32)
+    img_0_1 = img_float / ((2 ** bitness) - 1)
     mean = img_0_1.mean()
     stdev = img_0_1.std()
     img_8_bit = img_0_1 + (0.5 - mean)
