@@ -195,6 +195,9 @@ void make_ortho_cpp(
 }
 """
 
+cppyy.cppdef(cpp_source)
+from cppyy.gbl import make_ortho_cpp
+
 
 def ortho_cpp(
     x1: float,
@@ -207,8 +210,6 @@ def ortho_cpp(
     dem: np.ndarray,
     dem_geot: np.array,
 ):
-    cppyy.cppdef(cpp_source)
-    from cppyy.gbl import make_ortho_cpp
     gsd = abs(x1 - x2) / width
     height = int(abs(y1 - y2) / gsd)
     output = np.zeros((width * height), dtype=np.ubyte)
@@ -230,4 +231,3 @@ def ortho_cpp(
         output
     )
     return output.reshape(width, height).transpose(), gsd, x1, y1
-

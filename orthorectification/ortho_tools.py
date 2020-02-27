@@ -93,7 +93,7 @@ def lon_lat_alt_to_xy(
     return samp_number, line_number
 
 
-@jit(nopython=True, parallel=True)
+@jit(nopython=True, parallel=True, nogil=True)
 def make_ortho(
     x1: float,
     x2: float,
@@ -247,7 +247,7 @@ def unpack_rpc_parameters(dataset: gdal.Dataset) -> RPCCoeffs:
     )
 
 
-def lon_lat_to_pixel(lon: float, lat: float, geot: np.array) -> Tuple[int, int]:
+def lon_lat_to_pixel(lon: float, lat: float, geot: np.array) -> Tuple[float, float]:
     """
     Returns a pixel coordinate (x,y) as a tuple when provided with a longitude, latitude coordinate
     and a geo_transform (affine transform)
@@ -256,8 +256,8 @@ def lon_lat_to_pixel(lon: float, lat: float, geot: np.array) -> Tuple[int, int]:
     :param geot: affine transform parameters in a length 6 np.array
     :return: A pixel coordinate as a Tuple (x, y)
     """
-    x = int((lon - geot[0]) / geot[1])
-    y = int((lat - geot[3]) / geot[5])
+    x = (lon - geot[0]) / geot[1]
+    y = (lat - geot[3]) / geot[5]
     return x, y
 
 
