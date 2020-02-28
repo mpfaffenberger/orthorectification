@@ -1,13 +1,13 @@
 import cv2
 import numpy as np
 from shapely.geometry import Polygon
-from typing import Collection, Tuple
+from typing import Sequence, Tuple
 from numba import jit
 from .ortho_tools import lon_lat_to_pixel
 
 
 @jit(nopython=True)
-def fracture_polygon_north_up(poly: Polygon, factor_x: int, factor_y) -> Collection[Polygon]:
+def fracture_polygon_north_up(poly: Polygon, factor_x: int, factor_y) -> Sequence[Polygon]:
     """
     Breaks a Shapely polygon into small north up rectangles, attempts to fill as much area as possible
     with smaller squares. The factors control the number of rectangles per dimension (resolution)
@@ -41,7 +41,7 @@ def fracture_polygon_north_up(poly: Polygon, factor_x: int, factor_y) -> Collect
 
 
 @jit(nopython=True)
-def fracture_parallelogram(poly: Polygon, factor: int) -> Collection[Polygon]:
+def fracture_parallelogram(poly: Polygon, factor: int) -> Sequence[Polygon]:
     """
     Fractures a parallelogram into smaller parallelogram with a non-regular orientation.
     The orientation of each individual small parallelogram with respect to the original
@@ -72,7 +72,7 @@ def fracture_parallelogram(poly: Polygon, factor: int) -> Collection[Polygon]:
 
 def rescale_elevation_data(elevation_data: np.ndarray) -> np.ndarray:
     """
-    Maps elevation data into a 0-255 8-bit represenation that is suitable for viewing
+    Maps elevation data into a 0-255 8-bit representation that is suitable for viewing
     :param elevation_data: elevation data input image
     :return: rescaled elevation image
     """
@@ -84,10 +84,10 @@ def rescale_elevation_data(elevation_data: np.ndarray) -> np.ndarray:
 
 
 def reproject_with_affine(
-    coords: Collection[Tuple[float, float]],
+    coords: Sequence[Tuple[float, float]],
     geo_transform: np.array,
     resize_factor: float = 1.0,
-) -> Collection[Tuple[float, float]]:
+) -> Sequence[Tuple[float, float]]:
     """
     Reprojects a coordinate array according to a provided affine transform and resizing factor
     :param coords: Coordinate array that will be reprojected

@@ -1,0 +1,12 @@
+name: orthorectification
+channels:
+  - defaults
+dependencies:
+  - gdal
+  - scikit-image
+  - shapely
+  - opencv
+  - numba
+  - pip:
+    - sardem
+    - Pillow

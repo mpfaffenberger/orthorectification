@@ -177,7 +177,8 @@ def linear_interp(x: float, y: float, source: np.ndarray, source_height: int) ->
 
 def unpack_rpc_parameters(dataset: gdal.Dataset) -> RPCCoeffs:
     """
-    Returns RPC coefficients when provided with a GDAL dataset if that dataset contains RPCs
+    Returns RPC coefficients collection as a NamedTuple
+    when provided with a GDAL dataset if that dataset contains RPCs
     :param dataset: GDAL dataset reference for an image with RPCs
     :return: A NamedTuple containing RPC coefficients and parameters
     """

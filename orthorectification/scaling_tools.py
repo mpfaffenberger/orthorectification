@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from numba import jit
 
 
 def resize(img: np.array, factor: int) -> np.array:
