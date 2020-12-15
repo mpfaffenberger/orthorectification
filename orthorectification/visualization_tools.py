@@ -3,7 +3,7 @@ import numpy as np
 from shapely.geometry import Polygon
 from typing import Sequence, Tuple
 from numba import jit
-from .ortho_tools import lon_lat_to_pixel
+from .ortho_tools import lon_lat_to_pixel, pixel_to_lon_lat
 
 
 @jit(nopython=True)
@@ -83,9 +83,25 @@ def rescale_elevation_data(elevation_data: np.ndarray) -> np.ndarray:
     return rescaled_elevation_data
 
 
+def inverse_reproject_with_affine(
+    coords: Sequence[Tuple[float, float]],
+    geo_transform: np.ndarray,
+) -> Sequence[Tuple[float, float]]:
+    """
+    Inverts the projection of a coordinate array according to a provided affine transform and resizing factor
+    :param coords: Coordinate array that will be reprojected
+    :param geo_transform: Affine transform as the basis of the reprojection  (length 6 np.array of float32/64)
+    :return: Inversely reprojected coordinate array
+    """
+    reprojected_points = [
+        pixel_to_lon_lat(point[0], point[1], geo_transform) for point in coords
+    ]
+    return reprojected_points
+
+
 def reproject_with_affine(
     coords: Sequence[Tuple[float, float]],
-    geo_transform: np.array,
+    geo_transform: np.ndarray,
     resize_factor: float = 1.0,
 ) -> Sequence[Tuple[float, float]]:
     """

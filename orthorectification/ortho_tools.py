@@ -2,7 +2,7 @@ import numpy as np
 import math
 from sardem.dem import main as load_dem
 from numba import jit, prange
-from typing import Tuple, NamedTuple
+from typing import Tuple, NamedTuple, Dict
 import gdal
 
 
@@ -45,7 +45,7 @@ def lon_lat_alt_to_xy(
     :return: Pixel coordinate (x,y) as floating point values -- interpolation will be needed to arrive at a
     pixel intensity value!
     """
-    # First create the normalized values for lon/lat/alt
+    # First create the normalized values for x/y/alt
     norm_lon = (lon - rpcs.long_off) / rpcs.long_scale
     norm_lat = (lat - rpcs.lat_off) / rpcs.lat_scale
     norm_alt = (alt - rpcs.height_off) / rpcs.height_scale
@@ -104,6 +104,7 @@ def make_ortho(
     rpcs: RPCCoeffs,
     dem: np.ndarray,
     dem_geot: np.array,
+    missing_data_value: float = None
 ) -> Tuple[np.array, float, float, float]:
     """
     Produces an orthorectified image given a
@@ -133,8 +134,9 @@ def make_ortho(
             dem_y = int((lat - dem_geot[3]) / dem_geot[5])
             if dem_x < 0 or dem_x > dem.shape[1] - 1 or dem_y < 0 or dem_y > dem.shape[0] - 1:
                 # Numba will segfault if I don't catch this... AND it will fail to compile
-                # if I try to include a useful message with "dem_x" and "dem_y" :( :( :(
+                # if I try tooogl include a useful message with "dem_x" and "dem_y" :( :( :(
                 raise IndexError("DEM indices out of bounds")
+
             altitude = linear_interp(dem_x, dem_y, dem.reshape(-1), dem.shape[1])
             x, y = lon_lat_alt_to_xy(lon, lat, altitude, rpcs)
             if 1 <= x < source.shape[1] - 1 and 1 <= y < source.shape[0] - 1:
@@ -175,14 +177,18 @@ def linear_interp(x: float, y: float, source: np.ndarray, source_height: int) ->
     return int(final_value)
 
 
-def unpack_rpc_parameters(dataset: gdal.Dataset) -> RPCCoeffs:
+def unpack_rpc_parameters_dataset(dataset: gdal.Dataset) -> RPCCoeffs:
+    rpc_dict = dataset.GetMetadata_Dict("RPC")
+    return unpack_rpc_parameters(rpc_dict)
+
+
+def unpack_rpc_parameters(rpc_dict: Dict[str, str]) -> RPCCoeffs:
     """
     Returns RPC coefficients collection as a NamedTuple
     when provided with a GDAL dataset if that dataset contains RPCs
     :param dataset: GDAL dataset reference for an image with RPCs
     :return: A NamedTuple containing RPC coefficients and parameters
     """
-    rpc_dict = dataset.GetMetadata_Dict("RPC")
     height_off = float(rpc_dict["HEIGHT_OFF"])
     height_scale = float(rpc_dict["HEIGHT_SCALE"])
     lat_off = float(rpc_dict["LAT_OFF"])
@@ -246,6 +252,20 @@ def unpack_rpc_parameters(dataset: gdal.Dataset) -> RPCCoeffs:
         samp_off,
         samp_scale,
     )
+
+
+def pixel_to_lon_lat(x: float, y: float, geot: np.ndarray) -> Tuple[float, float]:
+    """
+    Returns a lon/lat coordinate as a tuple when provided with a pixel coordinate x,y
+    and a geo_transform (affine transform)
+    :param x: longitude of the world coordinate
+    :param y: latitude of the world coordinate
+    :param geot: affine transform parameters in a length 6 np.array
+    :return: A longitude and latitude tuple (lon,lat)
+    """
+    lon = (x * geot[1]) + geot[0]
+    lat = (y * geot[5]) + geot[3]
+    return lon, lat
 
 
 def lon_lat_to_pixel(lon: float, lat: float, geot: np.array) -> Tuple[float, float]:
